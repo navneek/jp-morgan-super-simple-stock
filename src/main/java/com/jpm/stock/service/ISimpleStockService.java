@@ -57,5 +57,5 @@ public interface ISimpleStockService {
      * @return
      * @throws StockServiceException
      */
-    double calculateAllShareIndex(List<Stock> stocks) throws StockServiceException;
+    double calculateAllShareIndex(List<Stock> stocks);
 }

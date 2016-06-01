@@ -75,20 +75,27 @@ public class SimpleStockServiceImpl implements ISimpleStockService {
     @Override
     public Double calculateVolumeWeightedStockPrice() throws StockServiceException {
         List<Trade> trades = tradeService.getTradesFromLast(15);
-        return null;
+        double totalVolume = 0.0;
+        double totalQuantity = 0.0;
+
+        for (Trade trade : trades) {
+            totalQuantity = totalQuantity + trade.getShareQuantity();
+            totalVolume =  totalVolume + (trade.getShareQuantity() * trade.getPrice());
+        }
+        return totalVolume/  totalQuantity;
     }
 
 
     @Override
-    public double calculateAllShareIndex(List<Stock> stocks) throws StockServiceException {
-        double sum = 0;
+    public double calculateAllShareIndex(List<Stock> stocks)  {
         if (stocks == null || stocks.size() == 0) {
             throw new IllegalArgumentException("Cannot calculate all share index for empty stocks.");
         }
+        double sum = 1.0;
         for (Stock stock : stocks) {
             sum = sum * stock.getTickerPrice();
         }
-        return StrictMath.pow(sum, 1.0 / stocks.size());
+        return Math.round(StrictMath.pow(sum, 1.0 / stocks.size()));
     }
 
 

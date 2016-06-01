@@ -15,16 +15,15 @@ public class TestTrade {
 
     @Before
     public void setUp() {
-        testObject = new Trade(TradeIndicator.BUY, new Stock(StockType.COMMON, StockSymbol.ALE));
+        testObject = new Trade(TradeIndicator.BUY, new Stock(StockType.COMMON, StockSymbol.ALE.name()));
     }
 
     @Test
     public void testTradeCreation(){
         Assert.assertNotNull(testObject);
-
-        Trade another = new Trade(TradeIndicator.BUY, new Stock(StockType.COMMON, StockSymbol.ALE));
+        Trade another = new Trade(TradeIndicator.BUY, new Stock(StockType.COMMON, StockSymbol.ALE.name()));
         Assert.assertTrue(testObject.equals(another));
-        Assert.assertFalse(testObject.equals(new Trade(TradeIndicator.SELL, new Stock(StockType.PREFERRED, StockSymbol.ALE))));
+        Assert.assertFalse(testObject.equals(new Trade(TradeIndicator.SELL, new Stock(StockType.PREFERRED, StockSymbol.JOE.name()))));
     }
 
     @Test
@@ -33,7 +32,7 @@ public class TestTrade {
         testObject.setShareQuantity(new Double(5.0));
 
         Assert.assertTrue(TradeIndicator.BUY.equals(testObject.getIndicator()));
-        Assert.assertEquals(new Stock(StockType.COMMON, StockSymbol.ALE), testObject.getStock());
+        Assert.assertEquals(new Stock(StockType.COMMON, StockSymbol.ALE.name()), testObject.getStock());
         Assert.assertTrue(Double.compare(new Double(5.0), testObject.getShareQuantity())== 0);
         Assert.assertTrue(Double.compare(new Double(0.0), testObject.getPrice())== 0);
     }

@@ -12,24 +12,24 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = {"classpath:/application-context.xml"})
 public class SimpleStockServiceTest extends TestCase {
 
-    @Mock IStockRepository stockRepository;
-    @Mock ITradeService tradeService;
+    @Autowired
+    IStockRepository stockRepository;
+    @Mock
+    ITradeService tradeService;
 
     @InjectMocks
     @Resource
@@ -41,91 +41,60 @@ public class SimpleStockServiceTest extends TestCase {
     }
 
     @Test
-    public void testDependencyInjection(){
+    public void testDependencyInjection() {
         Assert.assertNotNull(simpleStockService);
     }
 
     @Test
     public void testCalculateDividendYield() throws StockServiceException, StockNotFoundException {
 
-        Stock stock = new Stock(StockType.COMMON, StockSymbol.ALE);
-
-        when(stockRepository.findStockBySymbol(anyString())).thenReturn(stock);
-
         final Double dividendYield = simpleStockService.calculateDividendYield(StockSymbol.ALE.name(), 0.0);
         Assert.assertNotNull(dividendYield);
     }
 
-    @Test(expected = StockServiceException.class)
-    public void testCalculateDividendYieldThrowsStockServiceException() throws StockServiceException, StockNotFoundException {
-
-        when(stockRepository.findStockBySymbol("")).thenThrow(StockNotFoundException.class);
-
-        simpleStockService.calculateDividendYield("", 0.0);
-    }
-
     @Test
     public void testCalculatePERatio() throws StockServiceException, StockNotFoundException {
-
-        Stock stock = new Stock(StockType.COMMON, StockSymbol.ALE);
-
-        when(stockRepository.findStockBySymbol(anyString())).thenReturn(stock);
-
-        final Double peRatio = simpleStockService.calculatePERatio(StockSymbol.ALE.name(), 0.0);
+        final Double peRatio = simpleStockService.calculatePERatio("ALE", 0.0);
         Assert.assertNotNull(peRatio);
-    }
-
-    @Test(expected = StockServiceException.class)
-    public void testCalculatePERatioThrowsStockServiceException() throws StockServiceException, StockNotFoundException {
-
-        when(stockRepository.findStockBySymbol("")).thenThrow(StockNotFoundException.class);
-
-        simpleStockService.calculatePERatio("", 0.0);
     }
 
     @Test
     public void testRecordTrade() throws StockServiceException, StockNotFoundException {
 
-        Stock stock = new Stock(StockType.COMMON, StockSymbol.ALE);
-        Trade trade = new Trade(TradeIndicator.BUY, stock);
+        Stock stock = new Stock(StockType.COMMON, "ALE");
 
+        Trade trade = new Trade(TradeIndicator.BUY, stock);
         trade.setPrice(new Double(100));
         trade.setShareQuantity(new Double(10));
-        trade.setTime(new Date());
 
-        when(stockRepository.findStockBySymbol(anyString())).thenReturn(stock);
-        when(tradeService.record(trade)).thenReturn(trade);
+        when(tradeService.record(trade)).thenReturn(true);
 
         //Actual
-        final Trade recorded = simpleStockService.recordTrade(trade);
+        final boolean recorded = simpleStockService.recordTrade(trade);
 
         //Assert
-        Assert.assertNotNull(recorded);
-        Assert.assertEquals(trade, recorded);
+        Assert.assertTrue(recorded);
     }
 
     @Test
     public void testCalculateGBCEAllShareIndex() throws StockServiceException, StockNotFoundException {
 
-        List<Stock> all = new ArrayList<>();
-        all.add(new Stock(StockType.COMMON, StockSymbol.ALE));
-        all.add(new Stock(StockType.PREFERRED, StockSymbol.GIN));
-        all.add(new Stock(StockType.COMMON, StockSymbol.JOE));
-
-        when(stockRepository.findAll()).thenReturn(all);
-        final Double index = simpleStockService.calculateGBCEAllShareIndex();
+        List<Stock> stocks = stockRepository.findAll();
+        double price = 2;
+        for (Stock stock : stocks) {
+            stock.setTickerPrice(price);
+            price = price * 2;
+        }
+        final Double index = simpleStockService.calculateAllShareIndex(stocks);
 
         //Assert
-        Assert.assertNotNull(index);
+        Assert.assertEquals(index, new Double(8.0));
 
     }
 
-    @Test(expected = StockServiceException.class)
-    public void testCalculateGBCEAllShareIndexStockServiceException() throws StockServiceException, StockNotFoundException {
-
-        when(stockRepository.findAll()).thenThrow(StockNotFoundException.class);
-
-        simpleStockService.calculateGBCEAllShareIndex();
+    @Test(expected = IllegalArgumentException.class)
+    public void testCalculateGBCEAllShareIndexThrowsStockServiceException() {
+        simpleStockService.calculateAllShareIndex(new ArrayList<Stock>());
     }
 
 

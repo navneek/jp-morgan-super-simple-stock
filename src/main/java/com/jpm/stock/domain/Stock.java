@@ -6,30 +6,29 @@ package com.jpm.stock.domain;
 public class Stock {
 
     private final StockType stockType;
-    private final StockSymbol stockSymbol;
+    private final String stockSymbol;
     private double lastDividend = 0.0;
     private double fixedDividend = 0.0;
     private double parValue = 0.0;
     private double tickerPrice = 0.0;
 
-    public Stock(StockType stockType, StockSymbol stockSymbol) {
+    public Stock(StockType stockType, String stockSymbol) {
         this.stockType = stockType;
         this.stockSymbol = stockSymbol;
     }
 
-    public Stock(StockSymbol symbol, StockType type, Double lastDividend, Double fixedDividend, Double parValue) {
+    public Stock(String symbol, StockType type, Double lastDividend, Double fixedDividend, Double parValue) {
         this.stockSymbol = symbol;
         this.stockType = type;
         this.setLastDividend(lastDividend);
         this.setFixedDividend(fixedDividend);
         this.setParValue(parValue);
     }
-
     public StockType getStockType() {
         return stockType;
     }
 
-    public StockSymbol getStockSymbol() {
+    public String getStockSymbol() {
         return stockSymbol;
     }
 

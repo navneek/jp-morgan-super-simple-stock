@@ -17,6 +17,7 @@ public class Trade implements Serializable {
     public Trade(TradeIndicator indicator, Stock stock) {
         this.indicator = indicator;
         this.stock = stock;
+        this.time = new Date();
     }
 
     public TradeIndicator getIndicator() {

@@ -13,16 +13,16 @@ public class TestStock {
 
     @Before
     public void setUp() {
-        jpMorgan = new Stock(StockType.COMMON, StockSymbol.ALE);
+        jpMorgan = new Stock(StockType.COMMON, StockSymbol.ALE.name());
     }
 
     @Test
     public void testStock(){
         Assert.assertNotNull(jpMorgan);
-        Assert.assertTrue(jpMorgan.equals(new Stock(StockType.COMMON, StockSymbol.ALE)));
+        Assert.assertTrue(jpMorgan.equals(new Stock(StockType.COMMON, StockSymbol.ALE.name())));
 
-        Stock nationalGas = new Stock(StockType.COMMON, StockSymbol.ALE);
-        Assert.assertFalse(jpMorgan.equals(nationalGas));
+        Stock gin = new Stock(StockType.COMMON, StockSymbol.GIN.name());
+        Assert.assertFalse(jpMorgan.equals(gin));
 
     }
 
