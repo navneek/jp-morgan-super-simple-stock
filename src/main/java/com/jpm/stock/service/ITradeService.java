@@ -1,5 +1,6 @@
 package com.jpm.stock.service;
 
+import com.jpm.stock.domain.Stock;
 import com.jpm.stock.domain.Trade;
 
 import java.util.List;
@@ -18,10 +19,17 @@ public interface ITradeService {
     boolean record(Trade trade);
 
     /**
-     * Return Trade recorded in last given in minutes
+     * Return all trades by given Stock
      *
-     * @param time
+     * @param stock
      * @return
      */
-    List<Trade> getTradesFromLast(int time);
+    List<Trade> findAllTradesByStock(Stock stock);
+
+    /**
+     * Delete all trades by given stock
+     *
+     * @param stock
+     */
+    void deleteTrades(Stock stock);
 }

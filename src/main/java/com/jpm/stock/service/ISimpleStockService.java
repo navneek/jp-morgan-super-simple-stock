@@ -33,23 +33,15 @@ public interface ISimpleStockService {
      */
     Double calculatePERatio(String stockSymbol, double price) throws StockServiceException, StockNotFoundException;
 
-    /**
-     * Records a trade
-     *
-     * @param trade
-     * @return
-     * @throws StockServiceException
-     */
-    boolean recordTrade(Trade trade) throws StockServiceException;
 
     /**
      * Calculate the Stock price for the given Stock from the trades recorded in given minutes
      *
-     * @return the volume weighted stock price
-     * @throws StockServiceException
+     * @param symbol
+     * @return
+     * @throws StockNotFoundException
      */
-    Double calculateVolumeWeightedStockPrice() throws StockServiceException;
-
+    double calculateVolumeWeightedStockPrice(String symbol) throws StockNotFoundException;
 
     /**
      * Calculates the All Share Index using the geometric mean of prices for all stocks
