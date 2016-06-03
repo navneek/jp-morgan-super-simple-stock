@@ -32,6 +32,5 @@ public class TradeServiceImpl implements ITradeService {
     @Override
     public void deleteTrades(Stock stock) {
         trades.remove(stock);
-
     }
 }

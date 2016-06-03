@@ -38,59 +38,62 @@ public class TestSimpleStockService extends AbstractSpringTest {
     }
 
     @Test
-    public void testDependencyInjection() {
-        Assert.assertNotNull(simpleStockService);
-    }
-
-    @Test
     public void testCalculateDividendYield() throws StockServiceException, StockNotFoundException {
 
+        //Input Price
         double price = 10.15;
 
-        //Type Common
+        //Test Stock of type Common
         Stock ale = stockRepository.findStockBySymbol("ALE");
-        final Double commonDividendYield = simpleStockService.calculateDividendYield(ale.getStockSymbol(), price);
-        Assert.assertNotNull(commonDividendYield);
-        Assert.assertEquals(commonDividendYield, new Double(ale.getLastDividend() / price));
+        final Double dividendYield = simpleStockService.calculateDividendYield(ale.getStockSymbol(), price);
+        Assert.assertNotNull(dividendYield);
+        Assert.assertEquals(dividendYield, new Double(ale.getLastDividend() / price));
 
 
-        //Type Preferred
+        //Test stock of type Preferred
         Stock gin = stockRepository.findStockBySymbol("GIN");
-        final Double prefDividendYield = simpleStockService.calculateDividendYield(gin.getStockSymbol(), price);
-        Assert.assertNotNull(prefDividendYield);
-        Assert.assertEquals(prefDividendYield, new Double(gin.getFixedDividend() * gin.getParValue() / price));
+        final Double calculatedDividendYield = simpleStockService.calculateDividendYield(gin.getStockSymbol(), price);
+        Assert.assertNotNull(calculatedDividendYield);
+        Assert.assertEquals(calculatedDividendYield, new Double(gin.getFixedDividend() * gin.getParValue() / price));
 
 
     }
 
     @Test
     public void testCalculatePERatio() throws StockServiceException, StockNotFoundException {
-        double price = 10.15;
 
-        //Type Common
+        //Given Stocks
         Stock ale = stockRepository.findStockBySymbol("ALE");
-        final Double commonPERatio = simpleStockService.calculatePERatio(ale.getStockSymbol(), price);
-        Assert.assertNotNull(commonPERatio);
-        Assert.assertEquals(commonPERatio, new Double(price / ale.getLastDividend()));
-
-
-        //Type Preferred
         Stock gin = stockRepository.findStockBySymbol("GIN");
-        final Double prefPERatio = simpleStockService.calculatePERatio(gin.getStockSymbol(), price);
+
+        //Given Price
+        double givenPrice = 10.15;
+
+        //Test with Stock of type Common
+        final Double commonPERatio = simpleStockService.calculatePERatio(ale.getStockSymbol(), givenPrice);
+        Assert.assertNotNull(commonPERatio);
+        Assert.assertEquals(commonPERatio, new Double(givenPrice / ale.getLastDividend()));
+
+
+        //Test with Stock of type Preferred
+        final Double prefPERatio = simpleStockService.calculatePERatio(gin.getStockSymbol(), givenPrice);
         Assert.assertNotNull(prefPERatio);
-        Assert.assertEquals(prefPERatio, new Double(price / gin.getLastDividend()));
+        Assert.assertEquals(prefPERatio, new Double(givenPrice / gin.getLastDividend()));
     }
 
 
     @Test
     public void testCalculateGBCEAllShareIndex() throws StockServiceException, StockNotFoundException {
 
+        //Prepare input of Stocks with price
         List<Stock> stocks = stockRepository.findAll();
         double price = 2;
         for (Stock stock : stocks) {
             stock.setTickerPrice(price);
             price = price * 2;
         }
+
+        //Calculate the GBCE
         final Double index = simpleStockService.calculateAllShareIndex(stocks);
 
         //Assert
@@ -100,6 +103,8 @@ public class TestSimpleStockService extends AbstractSpringTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testCalculateGBCEAllShareIndexThrowsStockServiceException() {
+
+        //The service should throw exception when passing empty stock list
         simpleStockService.calculateAllShareIndex(new ArrayList<Stock>());
     }
 
@@ -107,13 +112,26 @@ public class TestSimpleStockService extends AbstractSpringTest {
     @Test
     public void testCalculateVolumeWeightedStockPrice() throws StockNotFoundException {
 
+        //Prepare a Stock and Trades
+        Stock stock = stockRepository.findStockBySymbol("ALE");
+        List<Trade> list = createTrades(stock);
+
+        //Set Expectation
+        Mockito.when(tradeService.findAllTradesByStock(stock)).thenReturn(list);
+
+        //Test
+        double volumeWeightedStockPrice = simpleStockService.calculateVolumeWeightedStockPrice(stock.getStockSymbol());
+        Assert.assertNotNull(volumeWeightedStockPrice);
+        Assert.assertTrue(volumeWeightedStockPrice ==  new Double(21.0).doubleValue());
+    }
+
+    private List<Trade> createTrades(Stock stock) {
         List<Trade> list = new ArrayList<>();
         Calendar instance = Calendar.getInstance();
-        Stock ale = stockRepository.findStockBySymbol("ALE");
         double price = 1.4;
         double qty = 2;
         for (int i = 0; i < 25; i++) {
-            Trade trade = new Trade(TradeIndicator.BUY, ale);
+            Trade trade = new Trade(TradeIndicator.BUY, stock);
             instance.add(Calendar.MINUTE, -1);
             trade.setTime(instance.getTime());
             trade.setShareQuantity(qty);
@@ -121,16 +139,8 @@ public class TestSimpleStockService extends AbstractSpringTest {
             list.add(trade);
             qty = qty + 2;
             price = price + 2.3;
-
         }
-        Mockito.when(tradeService.findAllTradesByStock(ale)).thenReturn(list);
-        List<Trade> allTrades = tradeService.findAllTradesByStock(ale);
-        Assert.assertNotNull(allTrades);
-        Assert.assertTrue(allTrades.size() == 25);
-
-        double volumeWeightedStockPrice = simpleStockService.calculateVolumeWeightedStockPrice(ale.getStockSymbol());
-        Assert.assertNotNull(volumeWeightedStockPrice);
-        Assert.assertTrue(volumeWeightedStockPrice ==  new Double(21.0).doubleValue());
+        return list;
     }
 
 }
